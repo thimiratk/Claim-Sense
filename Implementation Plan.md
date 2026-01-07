@@ -17,7 +17,7 @@ stateDiagram-v2
 
 ---
 
-## Proposed Changes
+## Implementation Plan
 
 ### Core Module (`/app/core/`)
 

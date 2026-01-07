@@ -2,7 +2,30 @@
 
 An AI-powered insurance claim processing system that uses **multiple local LLM agents** (Ollama) to detect fraud through vision and text analysis.
 
-![Dashboard Screenshot](docs/images/dashboard_screenshot.png)
+## 📸 Screenshots
+
+<table>
+<tr>
+<td width="50%">
+<img src="docs/screenshots/claimant_portal.png" alt="Claimant Portal" />
+<p align="center"><strong>Claimant Portal</strong><br/>Customer-facing claim submission</p>
+</td>
+<td width="50%">
+<img src="docs/screenshots/dashboard_timeline.png" alt="Dashboard Timeline" />
+<p align="center"><strong>Admin Dashboard</strong><br/>Agent timeline & claim details</p>
+</td>
+</tr>
+<tr>
+<td width="50%">
+<img src="docs/screenshots/vision_evidence.png" alt="Vision Evidence" />
+<p align="center"><strong>Vision Agent Analysis</strong><br/>AI-powered damage detection & mismatch flagging</p>
+</td>
+<td width="50%">
+<img src="docs/screenshots/human_override.png" alt="Human Override" />
+<p align="center"><strong>Human Override Controls</strong><br/>Approve or reject with audit logging</p>
+</td>
+</tr>
+</table>
 
 ## ✨ Features
 
@@ -12,30 +35,33 @@ An AI-powered insurance claim processing system that uses **multiple local LLM a
 - **🔄 Dynamic State Machine** - Automatically routes suspicious claims to fraud investigation
 - **📊 Explainability Dashboard** - Streamlit UI showing agent reasoning and decision timeline
 - **👤 Human Override** - Operators can approve/reject claims with full audit logging
+- **📱 Claimant Portal** - Mobile-friendly web portal for customers to submit claims
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                         FastAPI                              │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │ Vision Agent│  │ Text Agent  │  │    Orchestrator     │  │
-│  │ (Llama 3.2- │  │ (Llama 3)   │  │ (Combines Results)  │  │
-│  │   Vision)   │  │             │  │                     │  │
-│  └──────┬──────┘  └──────┬──────┘  └──────────┬──────────┘  │
-│         │                │                     │             │
-│         └────────────────┴─────────────────────┘             │
-│                          │                                   │
-│              ┌───────────▼───────────┐                       │
-│              │    State Machine      │                       │
-│              │  (Dynamic Routing)    │                       │
-│              └───────────────────────┘                       │
-└─────────────────────────────────────────────────────────────┘
-                           │
-              ┌────────────▼────────────┐
-              │   Streamlit Dashboard   │
-              │   (Explainability UI)   │
-              └─────────────────────────┘
+┌─────────────────┐                    ┌─────────────────┐
+│  Claimant Portal│                    │    Dashboard    │
+│  (client_app.py)│                    │  (dashboard.py) │
+│   Customer UI   │                    │    Admin UI     │
+└────────┬────────┘                    └────────┬────────┘
+         │                                      │
+         └──────────────┬───────────────────────┘
+                        │
+         ┌──────────────▼──────────────────────────────────┐
+         │                   FastAPI                        │
+         │  ┌─────────────┐  ┌─────────────┐  ┌──────────┐ │
+         │  │ Vision Agent│  │ Text Agent  │  │Orchestrator│
+         │  │ (Llama 3.2- │  │ (Llama 3)   │  │           │ │
+         │  │   Vision)   │  │             │  │           │ │
+         │  └──────┬──────┘  └──────┬──────┘  └─────┬─────┘ │
+         │         └────────────────┴───────────────┘       │
+         │                          │                       │
+         │              ┌───────────▼───────────┐           │
+         │              │    State Machine      │           │
+         │              │  (Dynamic Routing)    │           │
+         │              └───────────────────────┘           │
+         └──────────────────────────────────────────────────┘
 ```
 
 ## 🚀 Quick Start
@@ -65,19 +91,34 @@ ollama pull llama3
 **Terminal 1 - API Server:**
 
 ```bash
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --port 8000
 ```
 
-**Terminal 2 - Dashboard:**
+**Terminal 2 - Claimant Portal (Customer UI):**
 
 ```bash
-streamlit run dashboard.py
+streamlit run client_app.py
+```
+
+**Terminal 3 - Admin Dashboard:**
+
+```bash
+streamlit run dashboard.py --server.port 8502
 ```
 
 ### 4. Access
 
-- **API Docs:** http://localhost:8000/docs
-- **Dashboard:** http://localhost:8501
+| Service         | URL                        | Description               |
+| --------------- | -------------------------- | ------------------------- |
+| API Docs        | http://localhost:8000/docs | FastAPI Swagger UI        |
+| Claimant Portal | http://localhost:8501      | Customer claim submission |
+| Admin Dashboard | http://localhost:8502      | Staff claim management    |
+
+### 5. Test Full Cycle
+
+```bash
+python test_full_cycle.py
+```
 
 ## 📡 API Endpoints
 
@@ -137,7 +178,9 @@ claim-automation/
 │   │   └── process_monitor.py
 │   └── api/
 │       └── endpoints.py
-├── dashboard.py             # Streamlit UI
+├── client_app.py            # Streamlit Claimant Portal
+├── dashboard.py             # Streamlit Admin Dashboard
+├── test_full_cycle.py       # End-to-end test script
 ├── requirements.txt
 └── README.md
 ```
